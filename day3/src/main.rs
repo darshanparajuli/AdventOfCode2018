@@ -121,7 +121,7 @@ fn main() -> Result<(), io::Error> {
         }
 
         if count == (c.width * c.height) {
-            println!("{}", c.id);
+            println!("id: {}", c.id);
             break;
         }
     }
