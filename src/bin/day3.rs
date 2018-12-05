@@ -1,5 +1,6 @@
+extern crate aoc;
+
 use std::cmp;
-use std::env;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self, BufReader};
@@ -71,10 +72,7 @@ fn parse_input(file_name: &str) -> Result<Vec<Claim>, io::Error> {
 }
 
 fn main() -> Result<(), io::Error> {
-    let arg = env::args()
-        .skip(1)
-        .next()
-        .ok_or(io::Error::from(io::ErrorKind::InvalidInput))?;
+    let arg = aoc::get_cmdline_arg()?;
 
     let claims = parse_input(&arg)?;
 
