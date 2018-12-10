@@ -134,6 +134,27 @@ fn main() -> Result<(), io::Error> {
 
     println!("part 1: {}", areas.iter().max().unwrap());
 
+    let mut size = 0;
+    for y in 0..max_y {
+        for x in 0..max_x {
+            let p = Point {
+                x: x as u16,
+                y: y as u16,
+            };
+
+            let mut sum = 0;
+            for (point, _) in &id_map {
+                sum += m_dist(&p, point);
+            }
+
+            if sum < 10_000 {
+                size += 1;
+            }
+        }
+    }
+
+    println!("part 2: {}", size);
+
     Ok(())
 }
 
