@@ -66,6 +66,12 @@ fn main() -> Result<(), io::Error> {
         }
     }
 
+    part1(&map, &map_inv);
+
+    Ok(())
+}
+
+fn part1(map: &HashMap<&Step, Vec<&Step>>, map_inv: &HashMap<&Step, HashSet<&Step>>) {
     let mut available = BinaryHeap::new();
     for (k, _) in map.iter() {
         if !map_inv.contains_key(k) {
@@ -125,6 +131,4 @@ fn main() -> Result<(), io::Error> {
     }
 
     println!("part 1: {}", output);
-
-    Ok(())
 }
