@@ -11,6 +11,12 @@ use std::io::{self, BufReader};
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct Step(char);
 
+impl Step {
+    fn work_time(&self) -> usize {
+        60 + self.0 as usize - 65 + 1
+    }
+}
+
 impl fmt::Display for Step {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.0)
@@ -67,6 +73,7 @@ fn main() -> Result<(), io::Error> {
     }
 
     part1(&map, &map_inv);
+    part2(&map, &map_inv, 5);
 
     Ok(())
 }
@@ -86,9 +93,9 @@ fn part1(map: &HashMap<&Step, Vec<&Step>>, map_inv: &HashMap<&Step, HashSet<&Ste
     while !available.is_empty() {
         let mut a = available.pop().unwrap();
 
-        let mut completed_previous = true;
         tmp.clear();
         loop {
+            let mut completed_previous = true;
             if let Some(prev_steps) = map_inv.get(a) {
                 for i in prev_steps {
                     if !completed.contains(i) {
@@ -105,7 +112,6 @@ fn part1(map: &HashMap<&Step, Vec<&Step>>, map_inv: &HashMap<&Step, HashSet<&Ste
                     break;
                 } else {
                     tmp.insert(a);
-                    completed_previous = true;
                     a = available.pop().unwrap();
                 }
             }
@@ -123,12 +129,85 @@ fn part1(map: &HashMap<&Step, Vec<&Step>>, map_inv: &HashMap<&Step, HashSet<&Ste
 
         if let Some(steps) = map.get(a) {
             for s in steps {
-                if completed_previous {
-                    available.push(s);
-                }
+                available.push(s);
             }
         }
     }
 
     println!("part 1: {}", output);
+}
+
+fn part2(
+    map: &HashMap<&Step, Vec<&Step>>,
+    map_inv: &HashMap<&Step, HashSet<&Step>>,
+    worker_count: usize,
+) {
+    let mut finished: HashSet<&Step> = HashSet::new();
+    let mut workers: HashMap<&Step, usize> = HashMap::new();
+    let mut available = BinaryHeap::new();
+
+    for (k, _) in map.iter() {
+        if !map_inv.contains_key(k) {
+            available.push(k);
+            if workers.len() < worker_count {
+                workers.insert(k, 0);
+            }
+        }
+    }
+
+    let mut count = 0;
+    while !workers.is_empty() {
+        workers.retain(|k, v| {
+            if *v == k.work_time() {
+                finished.insert(k);
+                false
+            } else {
+                *v += 1;
+                true
+            }
+        });
+
+        while workers.len() < worker_count {
+            let mut tmp = vec![];
+            let mut found = false;
+            while let Some(a) = available.pop() {
+                let mut finished_previous = true;
+                if let Some(prev_steps) = map_inv.get(a) {
+                    for i in prev_steps {
+                        if !finished.contains(i) {
+                            finished_previous = false;
+                            break;
+                        }
+                    }
+                }
+
+                if finished_previous {
+                    workers.insert(a, 1);
+                    found = true;
+                    if let Some(steps) = map.get(a) {
+                        for s in steps {
+                            available.push(s);
+                        }
+                    }
+                    break;
+                } else {
+                    tmp.push(a);
+                }
+            }
+
+            for a in tmp {
+                available.push(a);
+            }
+
+            if !found {
+                break;
+            }
+        }
+
+        if !workers.is_empty() {
+            count += 1;
+        }
+    }
+
+    println!("part 2: {}", count);
 }
