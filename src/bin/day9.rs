@@ -43,33 +43,30 @@ fn part1(game_info: &GameInfo) -> usize {
     }
 
     let mut circle = vec![0];
+    circle.reserve(game_info.last_marble_points);
+
     let mut current_marble_index = 0;
     let mut current_player = 1;
 
     for marble in 1..=game_info.last_marble_points {
-        if circle.len() == 1 {
-            current_marble_index = 1;
-            circle.push(marble);
+        if marble % 23 == 0 {
+            *players.get_mut(&current_player).unwrap() += marble;
+            let mut remove_index = (current_marble_index as isize - 7) % circle.len() as isize;
+            if remove_index < 0 {
+                remove_index = circle.len() as isize + remove_index;
+            }
+            let remove_index = remove_index as usize;
+            *players.get_mut(&current_player).unwrap() += circle.remove(remove_index);
+            current_marble_index = remove_index % circle.len();
         } else {
-            if marble > 1 && marble % 23 == 0 {
-                *players.get_mut(&current_player).unwrap() += marble;
-                let mut remove_index = (current_marble_index as isize - 7) % circle.len() as isize;
-                if remove_index < 0 {
-                    remove_index = circle.len() as isize + remove_index;
-                }
-                let remove_index = remove_index as usize;
-                *players.get_mut(&current_player).unwrap() += circle.remove(remove_index);
-                current_marble_index = remove_index % circle.len();
+            let one = (current_marble_index + 1) % circle.len();
+            let two = (current_marble_index + 2) % circle.len();
+            if one == circle.len() - 1 && two == 0 {
+                circle.push(marble);
+                current_marble_index = one + 1;
             } else {
-                let one = (current_marble_index + 1) % circle.len();
-                let two = (current_marble_index + 2) % circle.len();
-                if one == circle.len() - 1 && two == 0 {
-                    circle.push(marble);
-                    current_marble_index = one + 1;
-                } else {
-                    circle.insert(two, marble);
-                    current_marble_index = two;
-                }
+                circle.insert(two, marble);
+                current_marble_index = two;
             }
         }
 
@@ -99,6 +96,6 @@ fn part1(game_info: &GameInfo) -> usize {
 
 fn part2(game_info: &GameInfo) -> usize {
     let mut game_info_large = game_info.clone();
-    game_info_large.last_marble_points = game_info.last_marble_points * 100;
+    game_info_large.last_marble_points = game_info.last_marble_points * 10;
     part1(&game_info_large)
 }
